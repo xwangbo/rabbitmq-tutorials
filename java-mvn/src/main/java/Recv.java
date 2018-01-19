@@ -14,7 +14,8 @@ public class Recv {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(Send.HOST);
 
-        try (Connection connection = factory.newConnection()) {
+        try {
+            Connection connection = factory.newConnection();
             Channel channel = connection.createChannel();
             channel.queueDeclare(Send.QUEUE_NAME, false, false, false, null);
 
