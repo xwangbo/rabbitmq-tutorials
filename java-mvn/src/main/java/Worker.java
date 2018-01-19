@@ -17,6 +17,10 @@ public class Worker {
         try {
             Connection connection = factory.newConnection();
             Channel channel = connection.createChannel();
+
+            int prefetchCount = 1;
+            channel.basicQos(prefetchCount);
+
             boolean durable = true;
             channel.queueDeclare(NewTask.QUEUE_NAME, durable, false, false, null);
 
