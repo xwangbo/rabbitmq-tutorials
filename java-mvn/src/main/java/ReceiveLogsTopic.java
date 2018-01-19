@@ -8,7 +8,7 @@ import java.util.concurrent.TimeoutException;
 
 
 @Slf4j
-public class ReceiveLogsDirect {
+public class ReceiveLogsTopic {
 
     public static void main(String[] args) {
 
@@ -18,18 +18,18 @@ public class ReceiveLogsDirect {
         }
 
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(EmitLogDirect.HOST);
+        factory.setHost(EmitLogTopic.HOST);
 
         try {
             Connection connection = factory.newConnection();
             Channel channel = connection.createChannel();
 
-            channel.exchangeDeclare(EmitLogDirect.EXCHANGE_NAME, BuiltinExchangeType.DIRECT);
+            channel.exchangeDeclare(EmitLogTopic.EXCHANGE_NAME, BuiltinExchangeType.TOPIC);
 
             String queueName = channel.queueDeclare().getQueue();
 
-            for (String severity : args) {
-                channel.queueBind(queueName, EmitLogDirect.EXCHANGE_NAME, severity);
+            for (String bindingKey : args) {
+                channel.queueBind(queueName, EmitLogTopic.EXCHANGE_NAME, bindingKey);
             }
 
             log.info(" [*] Waiting for messages. To exit press CTRL+C");

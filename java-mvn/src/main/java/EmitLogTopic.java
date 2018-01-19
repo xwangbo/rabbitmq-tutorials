@@ -12,9 +12,9 @@ import java.util.concurrent.TimeoutException;
 import static org.apache.commons.lang3.StringUtils.SPACE;
 
 @Slf4j
-public class EmitLogDirect {
+public class EmitLogTopic {
 
-    public final static String EXCHANGE_NAME = "direct_logs";
+    public final static String EXCHANGE_NAME = "topic_logs";
     public final static String HOST = "localhost";
 
     public static void main(String[] args) {
@@ -35,19 +35,19 @@ public class EmitLogDirect {
 
             Channel channel = connection.createChannel();
 
-            channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.DIRECT);
+            channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.TOPIC);
 
             String message = getMessage(args),
-                    severity = getSeverity(args);
+                    routingKey = getRouting(args);
 
-            channel.basicPublish(EXCHANGE_NAME, severity, null, message.getBytes());
+            channel.basicPublish(EXCHANGE_NAME, routingKey, null, message.getBytes());
 
-            log.info("[x] Sent [{}]:'{}'", severity, message);
+            log.info("[x] Sent [{}]:'{}'", routingKey, message);
 
             channel.close();
             //auto close with try resource
             //connection.close();
-            log.info("disconnected");
+            log.info("Disconnected");
         } catch (TimeoutException | IOException e) {
             e.printStackTrace();
         }
@@ -61,7 +61,7 @@ public class EmitLogDirect {
         return StringUtils.join(ArrayUtils.subarray(strings, 1, strings.length), SPACE);
     }
 
-    private static String getSeverity(String[] strings) {
+    private static String getRouting(String[] strings) {
         if (ArrayUtils.isEmpty(strings)) {
             return "info";
         }
