@@ -1,6 +1,7 @@
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.MessageProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -13,7 +14,7 @@ import static org.apache.commons.lang3.StringUtils.SPACE;
 @Slf4j
 public class NewTask {
 
-    public final static String QUEUE_NAME = "hello";
+    public final static String QUEUE_NAME = "task_queue";
     public final static String HOST = "localhost";
 
     public static void main(String[] args) {
@@ -27,11 +28,13 @@ public class NewTask {
             log.info("connected");
 
             Channel channel = connection.createChannel();
-            channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+
+            boolean durable = true;
+            channel.queueDeclare(QUEUE_NAME, durable, false, false, null);
 
             String message = getMessage(args);
 
-            channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
+            channel.basicPublish("", QUEUE_NAME, MessageProperties.PERSISTENT_TEXT_PLAIN, message.getBytes());
 
             log.info("[x] sent '{}'", message);
 
@@ -44,7 +47,7 @@ public class NewTask {
 
     }
 
-    public static String getMessage(String[] strings) {
+    private static String getMessage(String[] strings) {
         if (ArrayUtils.isEmpty(strings)) {
             return "Hello World!";
         }

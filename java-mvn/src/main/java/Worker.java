@@ -17,7 +17,8 @@ public class Worker {
         try {
             Connection connection = factory.newConnection();
             Channel channel = connection.createChannel();
-            channel.queueDeclare(NewTask.QUEUE_NAME, false, false, false, null);
+            boolean durable = true;
+            channel.queueDeclare(NewTask.QUEUE_NAME, durable, false, false, null);
 
             Consumer consumer = new DefaultConsumer(channel) {
                 @Override
@@ -29,6 +30,7 @@ public class Worker {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     } finally {
+                        log.info("[x] Done.");
                         channel.basicAck(envelope.getDeliveryTag(), false);
                     }
                 }
