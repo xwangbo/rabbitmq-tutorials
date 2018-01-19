@@ -1,5 +1,6 @@
 import com.rabbitmq.client.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -7,22 +8,23 @@ import java.util.concurrent.TimeoutException;
 
 
 @Slf4j
-public class Worker {
+public class ReceiveLogs {
 
     public static void main(String[] args) {
 
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(NewTask.HOST);
+        factory.setHost(EmitLog.HOST);
 
         try {
             Connection connection = factory.newConnection();
             Channel channel = connection.createChannel();
 
-            int prefetchCount = 1;
-            channel.basicQos(prefetchCount);
+            channel.exchangeDeclare(EmitLog.EXCHANGE_NAME, BuiltinExchangeType.FANOUT);
 
-            boolean durable = true;
-            channel.queueDeclare(NewTask.QUEUE_NAME, durable, false, false, null);
+            String queueName = channel.queueDeclare().getQueue();
+            channel.queueBind(queueName, EmitLog.EXCHANGE_NAME, StringUtils.EMPTY);
+
+            log.info(" [*] Waiting for messages. To exit press CTRL+C");
 
             Consumer consumer = new DefaultConsumer(channel) {
                 @Override
@@ -40,8 +42,8 @@ public class Worker {
                 }
             };
 
-            boolean autoAck = false;
-            channel.basicConsume(NewTask.QUEUE_NAME, autoAck, consumer);
+            boolean autoAck = true;
+            channel.basicConsume(queueName, autoAck, consumer);
 
         } catch (TimeoutException | IOException e) {
             e.printStackTrace();
